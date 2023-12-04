@@ -12,4 +12,4 @@ for i in range(len(f)):
         for z in range(s):
             a[i+z+1] += 1 * a[i]
 
-print(sum(a))
+print(sum(a)
