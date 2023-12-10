@@ -1,5 +1,6 @@
 f = [[x for x in i] for i in open('input.txt', 'r').read().split('\n')]
 dir = {'S': ((0, -1), (0, 1), (1, 0), (-1, 0)), '|': ((0, -1), (0, 1)), '-': ((-1, 0), (1, 0)), 'L': ((0, -1), (1, 0)), 'J': ((0, -1), (-1, 0)), '7': ((0, 1), (-1, 0)), 'F': ((0, 1), (1, 0))}
+get_out = {(0, 1): ['|J7.', '|LF.'], (0, -1): ['|J7.', '|LF.'], (-1, 0): ['-JL.', '-7F.'], (1, 0): ['-JL.', '-7F.']}
 axes = [(0, -1), (0, 1), (1, 0), (-1, 0)]
 
 
@@ -25,6 +26,46 @@ while not (len(poses) == 2 and poses[0][0] == poses[1][0]):
 poses = poses[0][1] + poses[1][1] + [poses[0][0]]
 unclosed_tiles = []
 closed_tiles = []
+z = [['.' if (x, i) not in poses else f[i][x] for x in range(len(f[i]))] for i in range(len(f))]
+
+for i in range(len(f)):
+    for x in range(len(f[0])):
+        if f[i][x] == 'S':
+            z[i][x] = '|'
+
+
+def way_to_get_out(x):
+    did, a, unc = True, [(i[0] + 0.5, i[1] + 0.5) for i in x], False
+    visited = a.copy()
+    b = []
+
+    while did and not unc:
+        new, did = [], False
+        for pos in a:
+            for axe in axes:
+                p, q = pos[0] + (axe[0] / 2), pos[1] + (axe[1] / 2)
+                if 0 <= p < len(z[0]) and 0 <= q < len(z):
+                    if (pos[0] + axe[0], pos[1] + axe[1]) not in visited:
+                        try:
+                            if axe[0] == 0:
+                                if z[int(q)][int(p-0.5)] in get_out[axe][0] and z[int(q)][int(p+0.5)] in get_out[axe][1]:
+                                    new.append((pos[0] + axe[0], pos[1] + axe[1]))
+                                    visited.append((pos[0] + axe[0], pos[1] + axe[1]))
+                                    b.append((int(pos[0] + axe[0]), int(pos[1] + axe[1])))
+                                    did = True
+                            else:
+                                if z[int(q-0.5)][int(q)] in get_out[axe][0] and z[int(q+0.5)][int(p)] in get_out[axe][1]:
+                                    new.append((pos[0] + axe[0], pos[1] + axe[1]))
+                                    visited.append((pos[0] + axe[0], pos[1] + axe[1]))
+                                    did = True
+                                    b.append((int(pos[0] + axe[0]), int(pos[1] + axe[1])))
+                        except: 
+                            pass
+        a = new.copy()
+    
+    return b
+
+
 
 
 for i in range(len(f)):
@@ -42,16 +83,17 @@ for i in range(len(f)):
                                 did = False
                         else:
                             unc = True
-            print(unc)
+                
             if unc:
                 unclosed_tiles += a.copy()
             else:
                 closed_tiles += a.copy()
 
-print((14, 3) in poses)
-print(unclosed_tiles)
-print(closed_tiles)
+r = way_to_get_out(unclosed_tiles)
+closed_tiles = [i for i in closed_tiles if i not in r]
 print(len(set(closed_tiles)))
-
 for i in range(len(f)):
     print(''.join(['O' if (x, i) in unclosed_tiles else 'X' if (x, i) in closed_tiles else f[i][x] for x in range(len(f[i]))]))
+
+for i in z:
+    print(*i, sep='')
