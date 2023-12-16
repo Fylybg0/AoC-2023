@@ -25,10 +25,29 @@ def subCheck(com, idx, y, nums):
             o += 1
         else:
             r.append(y[x])
-    r = check(r)
-    if r != []:
-        return nums[:len(r)-1] == r[:-1]
-    return nums[:len(r)] == r
+    rr = check(r)
+    if rr != [] and r[-1] != '.':
+        return nums[:len(rr)-1] == rr[:-1]
+    return nums[:len(rr)] == rr
+
+def subCheck2(com, idx, y, routes):
+    o, r = 0, []
+    for x in range(len(y)):
+        if o >= len(com[:idx]):
+            break
+        if y[x] == '?':
+            r.append(com[o])
+            o += 1
+        else:
+            r.append(y[x])
+    rr = check(r)
+    for route in routes:
+        if rr != [] and r[-1] == '.':
+            if route[:len(rr)-1] == rr[:-1]:
+                return True
+        else:
+            return True
+    return False
 
 #print(subCheck(['#', '.', '#', '#', '.', '.', '.', '.'], 5, ['?', '?', '.', '?', '.', '?', '?', '?', '?', '?'], [1,2,3]))
 
@@ -39,22 +58,20 @@ def getLine(x, y):
     return [i for i in ''.join([('.' * (x[i]+1) if i != 0 else '.' * (x[i]) if (i == 0 and x[i] + 1 != 0) else '')  + '#' * y[i] for i in range(len(y))] + ['.' * (x[-1])])]
 
 
-def findCombinations(comb, idx, pp, j, i):
+def findCombinations(comb, idx, pp, line, route):
     global cg
-    if len(comb) == idx:
+    if pp == idx:
+        #print(comb)
         #print(cg)
-        b = [(1, 0)]
-        new = []
-        p = j.count('?')
         o, r = 0, []
-        for x in range(len(i[0])):
+        for x in range(len(line)):
             if o >= len(comb[:idx]):
                 break
             if i[0][x] == '?':
                 r.append(comb[o])
                 o += 1
             else:
-                r.append(i[0][x])
+                r.append(line[x])
         
         s, o = [], 0
         for x in r:
@@ -66,17 +83,29 @@ def findCombinations(comb, idx, pp, j, i):
         if o != 0:
             s.append(o)
 
-        if i[1] == s:
+        if route == s:
             cg += 1
+            if cg % 1000 == 0:
+                print(cg)
     else:
-        if subCheck(comb[:idx], idx, i[0], i[1]):
+        if subCheck(comb[:idx+1], idx+1, line, route):
+            findCombinations(comb.copy(), idx + 1, pp, line, route)
+        comb[idx] = '#'
+        if subCheck(comb[:idx+1], idx+1, line, route):
+            findCombinations(comb.copy(), idx + 1, pp, line, route)
+
+def findCombinationsMore(comb, idx, jCount, line, routes):
+    global d
+    if jCount == idx:
+        d.append(comb)
+        if len(d) % 100000 == 0:
+            print(len(d))
+    else:
+        if subCheck2(comb[:idx], idx, i, routes):
             comb[idx] = '.'
-            findCombinations(comb.copy(), idx + 1, pp, j, i)
+            findCombinationsMore(comb.copy(), idx + 1, jCount, line, routes)
             comb[idx] = '#'
-            findCombinations(comb.copy(), idx + 1, pp, j, i)
-#cg = 0
-#findCombinations(['?', '?', '?', '?', '?'], 0, 5, ['?', '#', '?', '?', '#', '?', '?'], [['?', '#', '?', '?', '#', '?', '?'], [1, 2]])
-#print(cg)
+            findCombinationsMore(comb.copy(), idx + 1, jCount, line, routes)
 
 c = 0
 k = 0
@@ -96,14 +125,16 @@ for i in f:
         print('brute')
         cg = 0
         jj = a[0].count('?')
-        findCombinations(['.'] * jj, 0, jj, a[0], i)
+        findCombinations(['.'] * jj, 0, jj, a[0], i[1])
+        print(cg)
         c += cg
     else:
         b = [(1, 0)]
         for j in a:
             new = []
             p = j.count('?')
-            d = [item for item in itertools.product(*[['.', '#'] for _ in range(p)])]
+            d, possible_following = [], [i[1][possible[1]:] for possible in b]
+            findCombinationsMore(['.'] * p, 0, p, i[0], possible_following)
             s = []
             for z in d:
                 o, r = 0, []
@@ -113,8 +144,14 @@ for i in f:
                         o += 1
                     else:
                         r.append(j[x])
-                s.append(check(r))
-            gr = { tuple(x): s.count(x) for x in s}
+                s.append(tuple(check(r)))
+                
+            gr = {}
+            for x in s:
+                if x in gr:
+                    gr[x]  += 1
+                else:
+                    gr[x] = 1
 
             for x in b:
                 for z in gr:
@@ -126,8 +163,5 @@ for i in f:
         
         c += sum([x[0] for x in b])
         print(c)
-    #a = [item for item in itertools.product(*[['.', '#'] for _ in range(p)])]
-
-    
 
 print(c)

@@ -1,0 +1,2 @@
+
+    print(idx, cg)
