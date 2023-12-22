@@ -59,7 +59,6 @@ for idx, i in enumerate(f, start=1):
     data = {}
     cg = findCombinations(0, i[1], i[0], len(i[0]), getFixed(i[0]))
 
-    print(idx, cg)
     c += cg
 
 print(c)
