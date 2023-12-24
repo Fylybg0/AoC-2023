@@ -12,7 +12,8 @@ fell = True
 while fell:
     fell = False
     for idx, block in enumerate(f):
-        print(idx)
+        '''if idx % 100 == 0:
+            print(idx)'''
         fell2 = True
         while fell2:
             fell2 = False
@@ -34,6 +35,25 @@ for i in holding:
     for x in holding[i]:
         reverse_holdings[x].add(i)
 
+def getFallen(start):
+    p, save = {start}, set()
+    visited = set()
+    flag = True
+    while flag and p != save:
+        new, flag, save = set(), False, p
+        for block in p:
+            for up in reverse_holdings[block]:
+                if all(i in p for i in holding[up]):
+                    new.add(up)
+                    flag = True
+                else:
+                    new.add(block)
+        visited.update(new)
+        p = new
+    return len([i for i in visited if i != start])
 
-def getFallen(x):
-    
+c = 0
+for i in range(len(f)):
+    c += getFallen(i)
+
+print(c)
