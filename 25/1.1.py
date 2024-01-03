@@ -28,7 +28,12 @@ def devide():
             for con in p:
                 for node in graph[con]:
                     if node not in p:
-                        new_con = p + (node, )
+                        for idx, i in enumerate(p):
+                            if i > node:
+                                new_con = p[:idx] + (node, ) + p[idx:]
+                                break
+                        else:
+                            new_con = p + (node, )
                         if isInd(new_con):
                             return len(new_con)
                         new.add(new_con)
